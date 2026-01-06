@@ -14,25 +14,24 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 import torch
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from pe_embedder import PEEmbedder
 from alibi_embedder import ALiBiEmbedder
+from pe_embedder import PEEmbedder
 from rope_embedder import RoPEEmbedder, RoPEEmbedderAlternative
 
 
 class EmbeddingBenchmark:
     def __init__(
         self,
-        output_dir: str = "../benchmarks/embedding",
+        output_dir: str | None = None,
         vocab_size: int = 9,
         embed_dim: int = 256,
         max_len: int = 1024,
@@ -41,11 +40,13 @@ class EmbeddingBenchmark:
         Initialize embedding benchmark framework.
 
         Args:
-            output_dir: Directory to save results
+            output_dir: Directory to save results (defaults to project_root/benchmarks/embedding)
             vocab_size: Vocabulary size (for test input)
             embed_dim: Embedding dimension
             max_len: Maximum sequence length
         """
+        if output_dir is None:
+            output_dir = str(Path(__file__).parent.parent / "benchmarks/embedding")
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.vocab_size = vocab_size
@@ -55,7 +56,7 @@ class EmbeddingBenchmark:
         # Initialize results storage
         self.results = {}
 
-        print(f"✓ Initialized embedding benchmark")
+        print("✓ Initialized embedding benchmark")
         print(f"  Vocab size: {vocab_size}, Embed dim: {embed_dim}, Max len: {max_len}")
 
     def _count_parameters(self, model: torch.nn.Module) -> int:
@@ -200,7 +201,9 @@ class EmbeddingBenchmark:
         names = list(self.results.keys())
         params = [self.results[n].get("parameters", 0) for n in names]
         model_sizes = [self.results[n].get("model_size_mb", 0) for n in names]
-        forward_times = [self.results[n].get("forward_time", 0) * 1000 for n in names]  # Convert to ms
+        forward_times = [
+            self.results[n].get("forward_time", 0) * 1000 for n in names
+        ]  # Convert to ms
         memory_usage = [self.results[n].get("memory_mb", 0) for n in names]
 
         # 1. Parameter Count
@@ -217,7 +220,9 @@ class EmbeddingBenchmark:
 
         # 2. Model Size
         ax = axes[0, 1]
-        bars = ax.bar(range(len(names)), model_sizes, color="lightgreen", edgecolor="darkgreen")
+        bars = ax.bar(
+            range(len(names)), model_sizes, color="lightgreen", edgecolor="darkgreen"
+        )
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(names, rotation=45, ha="right")
         ax.set_ylabel("Size (MB)")
@@ -227,7 +232,9 @@ class EmbeddingBenchmark:
 
         # 3. Forward Pass Time
         ax = axes[1, 0]
-        bars = ax.bar(range(len(names)), forward_times, color="lightcoral", edgecolor="darkred")
+        bars = ax.bar(
+            range(len(names)), forward_times, color="lightcoral", edgecolor="darkred"
+        )
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(names, rotation=45, ha="right")
         ax.set_ylabel("Time (ms)")
@@ -262,8 +269,12 @@ class EmbeddingBenchmark:
 
         # Create markdown table
         md = "# Embedding Benchmark Results\n\n"
-        md += "| Embedder | Parameters | Size (MB) | Forward Time (ms) | Memory (MB) |\n"
-        md += "|----------|------------|-----------|-------------------|-------------|\n"
+        md += (
+            "| Embedder | Parameters | Size (MB) | Forward Time (ms) | Memory (MB) |\n"
+        )
+        md += (
+            "|----------|------------|-----------|-------------------|-------------|\n"
+        )
 
         for name, res in self.results.items():
             params = res.get("parameters", 0)
@@ -325,14 +336,12 @@ def main():
     """Main entry point for embedding benchmark script."""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Benchmark DNA embedding algorithms"
-    )
+    parser = argparse.ArgumentParser(description="Benchmark DNA embedding algorithms")
     parser.add_argument(
         "--output",
         type=str,
-        default="../benchmarks/embedding",
-        help="Output directory for results",
+        default=None,
+        help="Output directory for results (defaults to project_root/benchmarks/embedding)",
     )
     parser.add_argument(
         "--vocab-size",

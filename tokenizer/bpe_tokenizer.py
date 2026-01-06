@@ -6,8 +6,8 @@ the most frequent character pairs.
 """
 
 import json
-from collections import Counter, defaultdict
-from typing import Dict, List, Optional, Tuple
+from collections import Counter
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 
@@ -168,7 +168,9 @@ class BPETokenizer:
         tokens.append(self.eos_token_id)
         return torch.tensor(tokens, dtype=torch.long)
 
-    def decode(self, token_ids: torch.Tensor, remove_special: bool = True) -> str:
+    def decode(
+        self, token_ids: Union[torch.Tensor, List[int]], remove_special: bool = True
+    ) -> str:
         """
         Decode token IDs back to DNA sequence.
 

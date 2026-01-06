@@ -24,16 +24,16 @@ import seaborn as sns
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from tokenizer.kmer_tokenizer import KmerTokenizer
-from tokenizer.bpe_tokenizer import BPETokenizer
 from data import load_fasta_sequences
+from tokenizer.bpe_tokenizer import BPETokenizer
+from tokenizer.kmer_tokenizer import KmerTokenizer
 
 
 class TokenizerBenchmark:
     def __init__(
         self,
         fasta_path: str,
-        output_dir: str = "../benchmarks/tokenizer",
+        output_dir: str | None = None,
         max_sequences: int = 500,
     ):
         """
@@ -41,10 +41,12 @@ class TokenizerBenchmark:
 
         Args:
             fasta_path: Path to FASTA file for testing
-            output_dir: Directory to save results
+            output_dir: Directory to save results (defaults to project_root/benchmarks/tokenizer)
             max_sequences: Max number of sequences to test
         """
         self.fasta_path = fasta_path
+        if output_dir is None:
+            output_dir = str(Path(__file__).parent.parent / "benchmarks/tokenizer")
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.max_sequences = max_sequences
@@ -53,7 +55,7 @@ class TokenizerBenchmark:
         self.sequences = load_fasta_sequences(
             fasta_file=self.fasta_path,
             max_sequences=self.max_sequences,
-            filter_invalid=True
+            filter_invalid=True,
         )
         # Filter sequences that are too short
         self.sequences = [seq for seq in self.sequences if len(seq) > 10]
@@ -225,7 +227,9 @@ class TokenizerBenchmark:
 
         # 2. Encoding Speed
         ax = axes[0, 1]
-        bars = ax.bar(range(len(names)), encode_speeds, color="lightgreen", edgecolor="darkgreen")
+        bars = ax.bar(
+            range(len(names)), encode_speeds, color="lightgreen", edgecolor="darkgreen"
+        )
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(names, rotation=45, ha="right")
         ax.set_ylabel("Sequences per Second")
@@ -235,7 +239,9 @@ class TokenizerBenchmark:
 
         # 3. Decoding Speed
         ax = axes[0, 2]
-        bars = ax.bar(range(len(names)), decode_speeds, color="lightcoral", edgecolor="darkred")
+        bars = ax.bar(
+            range(len(names)), decode_speeds, color="lightcoral", edgecolor="darkred"
+        )
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(names, rotation=45, ha="right")
         ax.set_ylabel("Sequences per Second")
@@ -266,7 +272,9 @@ class TokenizerBenchmark:
 
         # 6. Average Tokens per Sequence
         ax = axes[1, 2]
-        bars = ax.bar(range(len(names)), avg_tokens, color="peachpuff", edgecolor="sienna")
+        bars = ax.bar(
+            range(len(names)), avg_tokens, color="peachpuff", edgecolor="sienna"
+        )
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(names, rotation=45, ha="right")
         ax.set_ylabel("Average Tokens")
@@ -370,8 +378,8 @@ def main():
     parser.add_argument(
         "--output",
         type=str,
-        default="../benchmarks/tokenizer",
-        help="Output directory for results",
+        default=None,
+        help="Output directory for results (defaults to project_root/benchmarks/tokenizer)",
     )
     parser.add_argument(
         "--max-seqs",
