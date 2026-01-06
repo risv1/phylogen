@@ -6,7 +6,7 @@ Contains various DNA tokenization algorithms:
 - BPETokenizer: Byte Pair Encoding tokenization
 """
 
-from .kmer_tokenizer import DNATokenizer
+from .kmer_tokenizer import KmerTokenizer
 from .bpe_tokenizer import BPETokenizer
 
 __all__ = ["DNATokenizer", "BPETokenizer"]

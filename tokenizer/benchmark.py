@@ -15,17 +15,16 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import torch
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from tokenizer.kmer_tokenizer import DNATokenizer
+from tokenizer.kmer_tokenizer import KmerTokenizer
 from tokenizer.bpe_tokenizer import BPETokenizer
 from data import load_fasta_sequences
 
@@ -160,10 +159,10 @@ class TokenizerBenchmark:
         print("=" * 80)
 
         tokenizers = {
-            "Character (k=1)": DNATokenizer(k=1, stride=1),
-            "K-mer Overlap (k=3, s=1)": DNATokenizer(k=3, stride=1),
-            "K-mer Non-overlap (k=3, s=3)": DNATokenizer(k=3, stride=3),
-            "K-mer Large (k=6, s=1)": DNATokenizer(k=6, stride=1),
+            "Character (k=1)": KmerTokenizer(k=1, stride=1),
+            "K-mer Overlap (k=3, s=1)": KmerTokenizer(k=3, stride=1),
+            "K-mer Non-overlap (k=3, s=3)": KmerTokenizer(k=3, stride=3),
+            "K-mer Large (k=6, s=1)": KmerTokenizer(k=6, stride=1),
             "BPE (100 merges)": BPETokenizer(num_merges=100),
         }
 

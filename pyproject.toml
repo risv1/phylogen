@@ -8,6 +8,7 @@ dependencies = [
     "numpy",
     "torch",
     "biopython",
+    "dendropy",
     "matplotlib",
     "seaborn",
     "pandas",
