@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 import torch
 
 
-class DNATokenizer:
+class KmerTokenizer:
     def __init__(
         self,
         vocab: Optional[Dict[str, int]] = None,
@@ -13,7 +13,7 @@ class DNATokenizer:
         include_iupac: bool = False,
     ):
         """
-        DNA Tokenizer with support for character-level and k-mer tokenization.
+        Tokenizer with support for character-level and k-mer tokenization.
 
         Args:
             vocab: Custom vocabulary mapping. If None, generates based on k and include_iupac.

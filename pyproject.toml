@@ -1,10 +1,15 @@
 [project]
 name = "phylogen"
 version = "0.1.0"
-description = "Add your description here"
+description = "Transformer model for valid bacterial mutations by leveraging phylogenetic relationships."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
-    "scipy",
+    "torch",
+    "biopython",
+    "matplotlib",
+    "seaborn",
+    "pandas",
+    "tqdm"
 ]

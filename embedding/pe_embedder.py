@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 
-class DNAEmbedder(nn.Module):
+class PEEmbedder(nn.Module):
     def __init__(
         self,
         vocab_size: int = 9,
