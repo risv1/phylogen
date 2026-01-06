@@ -1,0 +1,58 @@
+{
+  "Character (k=1)": {
+    "name": "Character (k=1)",
+    "vocab_size": 9,
+    "encode_time": 0.019950151443481445,
+    "encode_speed": 5012.493277722671,
+    "decode_time": 0.014151811599731445,
+    "decode_speed": 7066.233131728355,
+    "reconstruction_accuracy": 1.0,
+    "avg_tokens_per_seq": 1696.07,
+    "compression_ratio": 0.9988208033866527
+  },
+  "K-mer Overlap (k=3, s=1)": {
+    "name": "K-mer Overlap (k=3, s=1)",
+    "vocab_size": 69,
+    "encode_time": 0.03643321990966797,
+    "encode_speed": 2744.747794675811,
+    "decode_time": 0.022158145904541016,
+    "decode_speed": 4513.012976392864,
+    "reconstruction_accuracy": 1.0,
+    "avg_tokens_per_seq": 1694.07,
+    "compression_ratio": 1.0
+  },
+  "K-mer Non-overlap (k=3, s=3)": {
+    "name": "K-mer Non-overlap (k=3, s=3)",
+    "vocab_size": 69,
+    "encode_time": 0.012161731719970703,
+    "encode_speed": 8222.51323269947,
+    "decode_time": 0.004621028900146484,
+    "decode_speed": 21640.202249509854,
+    "reconstruction_accuracy": 1.0,
+    "avg_tokens_per_seq": 566.69,
+    "compression_ratio": 2.9894122006740895
+  },
+  "K-mer Large (k=6, s=1)": {
+    "name": "K-mer Large (k=6, s=1)",
+    "vocab_size": 4101,
+    "encode_time": 0.03779888153076172,
+    "encode_speed": 2645.580925949287,
+    "decode_time": 0.02385425567626953,
+    "decode_speed": 4192.124095470355,
+    "reconstruction_accuracy": 1.0,
+    "avg_tokens_per_seq": 1691.07,
+    "compression_ratio": 1.0017740247299047
+  },
+  "BPE (100 merges)": {
+    "name": "BPE (100 merges)",
+    "train_time": 3.2882611751556396,
+    "vocab_size": 109,
+    "encode_time": 1.1969988346099854,
+    "encode_speed": 83.54227014145984,
+    "decode_time": 0.0052149295806884766,
+    "decode_speed": 19175.71435102638,
+    "reconstruction_accuracy": 1.0,
+    "avg_tokens_per_seq": 581.97,
+    "compression_ratio": 2.910923243466158
+  }
+}

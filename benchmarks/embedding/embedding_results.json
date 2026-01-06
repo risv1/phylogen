@@ -1,0 +1,62 @@
+{
+  "Sinusoidal PE": {
+    "name": "Sinusoidal PE",
+    "parameters": 2304,
+    "model_size_mb": 0.0087890625,
+    "forward_time": 0.0015427827835083007,
+    "output_shape": [
+      32,
+      512,
+      256
+    ],
+    "memory_mb": 0.0
+  },
+  "Learnable PE": {
+    "name": "Learnable PE",
+    "parameters": 264448,
+    "model_size_mb": 1.0087890625,
+    "forward_time": 0.0014209985733032227,
+    "output_shape": [
+      32,
+      512,
+      256
+    ],
+    "memory_mb": 0.0
+  },
+  "ALiBi": {
+    "name": "ALiBi",
+    "parameters": 2304,
+    "model_size_mb": 0.0087890625,
+    "forward_time": 0.0005335807800292969,
+    "output_shape": [
+      32,
+      512,
+      256
+    ],
+    "memory_mb": 0.0
+  },
+  "RoPE": {
+    "name": "RoPE",
+    "parameters": 2304,
+    "model_size_mb": 0.0087890625,
+    "forward_time": 0.003675389289855957,
+    "output_shape": [
+      32,
+      512,
+      256
+    ],
+    "memory_mb": 0.0
+  },
+  "RoPE (Complex)": {
+    "name": "RoPE (Complex)",
+    "parameters": 2304,
+    "model_size_mb": 0.0087890625,
+    "forward_time": 0.0011084794998168946,
+    "output_shape": [
+      32,
+      512,
+      256
+    ],
+    "memory_mb": 0.0
+  }
+}
