@@ -11,6 +11,7 @@ Generates comparative analysis graphs and metrics tables.
 """
 
 import json
+import psutil
 import sys
 import time
 from pathlib import Path
@@ -70,9 +71,11 @@ class EmbeddingBenchmark:
             result = func(*args, **kwargs)
             memory_mb = torch.cuda.max_memory_allocated() / 1024**2
         else:
-            # CPU memory tracking is complex, use 0 as placeholder
+            process = psutil.Process()
+            mem_before = process.memory_info().rss
             result = func(*args, **kwargs)
-            memory_mb = 0.0
+            mem_after = process.memory_info().rss
+            memory_mb = (mem_after - mem_before) / 1024**2
         return result, memory_mb
 
     def benchmark_embedder(
