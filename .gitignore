@@ -1,8 +1,13 @@
 .DS_Store
 __pycache__/
 
+data/process_ecoli.ipynb
+data/ecoli_processed_pairs
+
 data/bvbrc_data/*
 !data/bvbrc_data/download-fasta.sh
+!data/bvbrc_data/download-cds.sh
+!data/bvbrc_data/merge-cds.sh
 !data/bvbrc_data/README.md
 !data/bvbrc_data/bvbrc_processing.ipynb
 

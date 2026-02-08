@@ -71,3 +71,6 @@ p3-get-genome-features --input genome_ids_only.txt --nohead \
   --selective \
   > parC_parE_features.tsv
 ```
+
+Then, in order to convert our DNA sequence to proteins later, we will need to fetch all CDS (coding sequences) of each genome, and extract from contigs based on position information. This is done because in most free living bacteria (Like E.Coli), only around 90% of the genome sequence is CDS, the remaining 10% is non-coding regions like promoters, terminators, and other intergenic spacing elements, which on directly translating to its protein equivalent will yield garbage values. \
+We can perform the same fetch for genome-features as we did for gyrA, but without keyword specification to get all CDS position information, run `download-cds.sh`, and then run `merge-cds.sh` to get the merged TSV.
