@@ -1,12 +1,3 @@
-"""
-Tokenizer module for PhyloGen
+from .protein_tokenizer import ProteinTokenizer
 
-Contains various DNA tokenization algorithms:
-- DNATokenizer: K-mer based tokenization
-- BPETokenizer: Byte Pair Encoding tokenization
-"""
-
-from .kmer_tokenizer import KmerTokenizer
-from .bpe_tokenizer import BPETokenizer
-
-__all__ = ["DNATokenizer", "BPETokenizer"]
+__all__ = ["ProteinTokenizer"]
