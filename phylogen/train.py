@@ -19,17 +19,17 @@ def main(checkpoint_path=None):
     # CONFIG
     # ────────────────────────────────────────────────
 
-    tokenizer_path = Path(__file__).parent / "tokenizer" / "tokenizer.json"
+    tokenizer_path = Path(__file__).parent.parent / "tokenizer" / "tokenizer.json"
     tokenizer = ProteinTokenizer.load(str(tokenizer_path))
 
-    csv_path = Path(__file__).parent / "data" / "ecoli_processed_pairs" / "ecoli_pairs_concat.csv"
-    phylo_pkl_path = Path(__file__).parent / "data" / "gtdb_data" / "ecoli_phylo_distances.pkl"
+    csv_path = Path(__file__).parent.parent / "data" / "ecoli_processed_pairs" / "ecoli_pairs_concat.csv"
+    phylo_pkl_path = Path(__file__).parent.parent / "data" / "gtdb_data" / "ecoli_phylo_distances.pkl"
 
     epochs = 1
     batch_size = 4
     chunk_size = 1024
     overlap = 256
-    max_samples = None
+    max_samples = 10
     use_mutated_only = False
 
     checkpoint_dir = Path("checkpoints")
@@ -40,7 +40,7 @@ def main(checkpoint_path=None):
 
     model = PhyloGen(
         vocab_size=tokenizer.vocab_size,
-        pad_token_id=tokenizer.vocab.get("[PAD]", 31),
+        tokenizer=tokenizer, # now dynamic pad id
         embed_dim=256,
         num_heads=8,
         num_layers=6,
