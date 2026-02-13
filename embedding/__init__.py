@@ -8,12 +8,12 @@ Contains various DNA embedding algorithms with positional encoding:
 - RoPEEmbedderAlternative: RoPE with complex number implementation
 """
 
-from .pe_embedder import DNAEmbedder
+from .pe_embedder import PEEmbedder
 from .alibi_embedder import ALiBiEmbedder, ALiBiEmbedderSimple
 from .rope_embedder import RoPEEmbedder, RoPEEmbedderAlternative
 
 __all__ = [
-    "DNAEmbedder",
+    "PEEmbedder",
     "ALiBiEmbedder",
     "ALiBiEmbedderSimple",
     "RoPEEmbedder",

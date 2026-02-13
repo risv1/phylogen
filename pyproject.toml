@@ -17,4 +17,5 @@ dependencies = [
     "requests",
     "ipykernel",
     "rapidfuzz",
+    "joblib"
 ]
