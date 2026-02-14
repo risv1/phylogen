@@ -44,7 +44,7 @@ class ProteinTokenizer:
             bos_token, eos_token, pad_token, unk_token,
             "[MUT]", "[RESISTANT]", "[SUSCEPTIBLE]",
             "[CIPRO]", "[FLUOROQUINOLONE]", "[AMPC]", "[MEROPENEM]",  # antibiotics
-            "[SPECIES_ECOLI]", "[PHYLO_REF]",
+            "[SPECIES_ECOLI]", "[PHYLO_REF]", "[SEP]"
         ]
 
         # Add user-requested extras

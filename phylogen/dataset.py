@@ -3,6 +3,7 @@ import os
 import sys
 import pickle
 import random
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -25,6 +26,7 @@ class ProteomeDataset(Dataset):
         phylo_pkl: str = None,
         mode: str = "finetune",
         max_samples: int = None,
+        start_idx: int = 0,
         use_mutated_only: bool = False,
     ):
         if phylo_pkl is None:
@@ -40,9 +42,12 @@ class ProteomeDataset(Dataset):
             else:
                 print("Warning: 'reversions_applied' column not found — using all rows")
 
-        # Optional subsample
+        # Optional subsample with start_idx for chunked loading
         if max_samples is not None:
-            df = df.head(max_samples).reset_index(drop=True)
+            df = df.iloc[start_idx:start_idx + max_samples].reset_index(drop=True)
+            print(f"Loading chunk: samples {start_idx} to {start_idx + len(df)}")
+        else:
+            df = df.iloc[start_idx:].reset_index(drop=True)
 
         self.df = df
         self.tokenizer = tokenizer
@@ -54,6 +59,14 @@ class ProteomeDataset(Dataset):
         # Load phylo matrix
         self.phylo_matrix = pickle.load(open(phylo_pkl, "rb"))
         self.num_reps = self.phylo_matrix.shape[0]
+
+        self.genome_to_phylo_idx = {}
+        for idx in range(len(self.df)):
+            genome_id = self.df.iloc[idx]['genome_id']
+            # Deterministic hash → fixed index
+            h = int(hashlib.sha256(genome_id.encode()).hexdigest(), 16)
+            phylo_idx = h % self.num_reps
+            self.genome_to_phylo_idx[idx] = phylo_idx
 
         # Precompute chunk indices
         self.chunk_indices = []  # (genome_idx, start_pos)
@@ -79,31 +92,50 @@ class ProteomeDataset(Dataset):
         # Conditioning
         if self.mode == "finetune":
             cond = ["[SPECIES_ECOLI]", "[CIPRO]", "[RESISTANT]"]
-            input_str = row['unmutated_proteome']
-            target_str = row['mutated_proteome']
+            unmut_str = row['unmutated_proteome']
+            mut_str   = row['mutated_proteome']
+
+            # Concatenate: unmutated [SEP] mutated
+            full_str = unmut_str + "[SEP]" + mut_str
+
+            # Encode once
+            full_ids = self.tokenizer.encode_fast(
+                full_str,
+                add_special_tokens=True,
+                conditioning=cond
+            )
+
+            # Find separator position (for loss masking in model)
+            sep_token_id = self.tokenizer.vocab.get("[SEP]", -1)
+            sep_positions = (full_ids == sep_token_id).nonzero(as_tuple=True)[0]
+            sep_pos = sep_positions[0].item() if len(sep_positions) > 0 else -1
+
+            input_ids = full_ids
+            labels    = full_ids.clone()
+
         else:  # pretrain
             cond = None
             input_str = row['unmutated_proteome']
-            target_str = input_str
-
-        # Encode
-        input_ids = self.tokenizer.encode_fast(input_str, add_special_tokens=True, conditioning=cond)
-        target_ids = self.tokenizer.encode_fast(target_str, add_special_tokens=True, conditioning=cond)
+            input_ids = self.tokenizer.encode_fast(
+                input_str, add_special_tokens=True, conditioning=cond
+            )
+            labels = input_ids.clone()
+            sep_pos = -1  # no masking
 
         # Chunk
         end = start + self.chunk_size
         input_chunk = input_ids[start:end]
-        target_chunk = target_ids[start:end]
+        target_chunk = labels[start:end]
 
-        # Pad last chunk if needed
+        # Pad if needed
         pad_len = self.chunk_size - len(input_chunk)
         if pad_len > 0:
             pad_tensor = torch.full((pad_len,), self.tokenizer.pad_token_id, dtype=torch.long)
             input_chunk = torch.cat([input_chunk, pad_tensor])
             target_chunk = torch.cat([target_chunk, pad_tensor])
 
-        # Phylo: random rep for simplicity
-        phylo_idx = random.randint(0, self.num_reps - 1)
+        # Fixed phylo
+        phylo_idx = self.genome_to_phylo_idx[genome_idx]
         phylo_dist = torch.tensor(self.phylo_matrix[phylo_idx], dtype=torch.float)
 
         return {
@@ -111,6 +143,7 @@ class ProteomeDataset(Dataset):
             'labels': target_chunk.long(),
             'phylo_dist': phylo_dist,
             'genome_id': row['genome_id'],
+            'sep_pos': sep_pos,  # used in model for loss masking
         }
 
 
@@ -120,4 +153,5 @@ def collate_fn(batch):
         'labels': torch.stack([b['labels'] for b in batch]),
         'phylo_dist': torch.stack([b['phylo_dist'] for b in batch]),
         'genome_id': [b['genome_id'] for b in batch],
+        'sep_pos': torch.tensor([b['sep_pos'] for b in batch]),  # (B,)
     }

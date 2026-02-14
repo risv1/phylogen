@@ -41,7 +41,8 @@
     "[AMPC]": 38,
     "[MEROPENEM]": 39,
     "[SPECIES_ECOLI]": 40,
-    "[PHYLO_REF]": 41
+    "[PHYLO_REF]": 41,
+    "[SEP]": 42
   },
   "pad_token": "[PAD]",
   "unk_token": "[UNK]",

@@ -83,9 +83,10 @@ class PhyloGen(nn.Module):
 
     def forward(
         self,
-        input_ids: torch.Tensor, # (B, L)
-        phylo_dists: torch.Tensor, # (B, num_reps) e.g. (B, 20)
+        input_ids: torch.Tensor,
+        phylo_dists: torch.Tensor,
         labels: Optional[torch.Tensor] = None,
+        sep_pos: Optional[torch.Tensor] = None,  # new: (B,)
         return_dict: bool = True,
     ):
         B, L = input_ids.shape
@@ -93,10 +94,8 @@ class PhyloGen(nn.Module):
         x = self.token_embed(input_ids) * math.sqrt(self.embed_dim)
         x = self.embed_dropout(x)
 
-        alibi_bias = self.alibi.get_alibi_bias(L) # (num_heads, L, L)
-
-        attn_mask = torch.tril(torch.ones(L, L, device=x.device, dtype=torch.bool))
-        attn_mask = attn_mask.view(1, 1, L, L)
+        alibi_bias = self.alibi.get_alibi_bias(L)
+        attn_mask = torch.tril(torch.ones(L, L, device=x.device, dtype=torch.bool)).view(1, 1, L, L)
 
         for block in self.blocks:
             x = block(x, phylo_dists, alibi_bias, attn_mask)
@@ -108,7 +107,17 @@ class PhyloGen(nn.Module):
         if labels is not None:
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
-            loss_fct = nn.CrossEntropyLoss(ignore_index=self.pad_token_id)
+
+            # Mask prefix up to separator (finetune mode)
+            if sep_pos is not None:
+                ignore_mask = torch.zeros_like(shift_labels, dtype=torch.bool)
+                for b in range(B):
+                    pos = sep_pos[b].item()
+                    if pos >= 0:
+                        ignore_mask[b, :pos] = True  # ignore before SEP
+                shift_labels = shift_labels.masked_fill(ignore_mask, -100)
+
+            loss_fct = nn.CrossEntropyLoss(ignore_index=-100)
             loss = loss_fct(
                 shift_logits.view(-1, shift_logits.size(-1)),
                 shift_labels.view(-1)
