@@ -39,7 +39,6 @@ checkpoint_dir = Path("checkpoints_finetune")
 checkpoint_dir.mkdir(exist_ok=True, parents=True)
 
 loss_log_file = Path("finetune_loss_log.json")
-loss_log_file.parent.mkdir(exist_ok=True, parents=True)
 
 save_every_steps = 2000
 freeze_first_n_blocks = 3
@@ -65,6 +64,8 @@ if loss_log_file.exists():
         loss_log = json.load(f)
 else:
     loss_log = []
+    with open(loss_log_file, "w") as f:
+        json.dump(loss_log, f, indent=4)
 
 if resume_from:
     ckpt = torch.load(resume_from, map_location=device)

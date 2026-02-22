@@ -29,16 +29,15 @@ batch_size = 4
 chunk_size = 1024
 overlap = 256
 lr = 3e-4
-max_samples = None
+max_samples = 30
 use_mutated_only = False
 
 checkpoint_dir = Path("checkpoints_pretrain")
 checkpoint_dir.mkdir(exist_ok=True, parents=True)
 
 loss_log_file = Path("pretrain_loss_log.json")
-loss_log_file.parent.mkdir(exist_ok=True, parents=True)
 
-save_every_steps = 5000
+save_every_steps = 30
 
 resume_from = None
 
@@ -64,6 +63,8 @@ if loss_log_file.exists():
         loss_log = json.load(f)
 else:
     loss_log = []
+    with open(loss_log_file, "w") as f:
+        json.dump(loss_log, f, indent=4)
 
 if resume_from:
     print(f"Resuming from checkpoint: {resume_from}")
@@ -94,7 +95,7 @@ loader = DataLoader(
     batch_size=batch_size,
     shuffle=True,
     collate_fn=collate_fn,
-    num_workers=0,
+    num_workers=6,
     pin_memory=True,
 )
 
