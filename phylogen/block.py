@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from attention import PhyloAttention
+from .attention import PhyloAttention
 
 class PhyloGenBlock(nn.Module):
     def __init__(

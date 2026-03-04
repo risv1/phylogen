@@ -1,5 +1,8 @@
 .DS_Store
 __pycache__/
+cache/
+checkpoints_*/
+logs/
 
 data/process_ecoli.ipynb
 data/ecoli_processed_pairs

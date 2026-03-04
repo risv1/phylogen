@@ -8,8 +8,8 @@ import torch.nn as nn
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from attention import PhyloAttention
-from block import PhyloGenBlock
+from .attention import PhyloAttention
+from .block import PhyloGenBlock
 
 from embedding.alibi_embedder import ALiBiEmbedder
 
