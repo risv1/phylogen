@@ -92,7 +92,7 @@ class ProteomeDataset(Dataset):
             except Exception as e:
                 print(f"Cache load failed — recomputing")
 
-        # Compute chunks (mutation-centered)
+        # Compute chunks
         self.chunk_indices = []
         print("Computing useful chunks...")
         MAX_CHUNKS_PER_GENOME = 50
@@ -101,7 +101,15 @@ class ProteomeDataset(Dataset):
             print(f"  Processing genome {g_idx+1}/{len(self.df)} ...")
             row = self.df.iloc[g_idx]
 
-            if mode == "finetune":
+            if mode == "pretrain":
+                proteome_str = row['unmutated_proteome']
+                token_len = len(self.tokenizer.encode_fast(proteome_str, add_special_tokens=False))
+                num_chunks = max(1, (token_len - chunk_size) // self.stride + 1)
+                for chunk_num in range(num_chunks):
+                    start = chunk_num * self.stride
+                    self.chunk_indices.append((g_idx, start, -1))
+
+            elif mode == "finetune":
                 cond = ["[SPECIES_ECOLI]", "[CIPRO]", "[RESISTANT]"]
                 bos_id = tokenizer.bos_token_id
                 sep_id = tokenizer.vocab["[SEP]"]
@@ -167,21 +175,43 @@ class ProteomeDataset(Dataset):
         genome_idx, chunk_start, global_sep_pos = self.chunk_indices[idx]
         row = self.df.iloc[genome_idx]
 
+        phylo_idx = self.genome_to_phylo_idx[genome_idx]
+        phylo_dist = torch.tensor(self.phylo_matrix[phylo_idx], dtype=torch.float)
+
+        if self.mode == "pretrain":
+            input_ids = self.tokenizer.encode_fast(row['unmutated_proteome'], add_special_tokens=True)
+            chunk_end = chunk_start + self.chunk_size
+            input_chunk = input_ids[chunk_start:chunk_end].clone()
+            labels = input_chunk.clone()
+
+            pad_len = self.chunk_size - len(input_chunk)
+            if pad_len > 0:
+                pad = torch.full((pad_len,), self.tokenizer.pad_token_id, dtype=torch.long)
+                input_chunk = torch.cat([input_chunk, pad])
+                labels      = torch.cat([labels, pad])
+
+            return {
+                'input_ids': input_chunk,
+                'labels': labels,
+                'phylo_dist': phylo_dist,
+                'genome_id': row['genome_id'],
+                'sep_pos': torch.tensor([-1], dtype=torch.long),
+                'chunk_start_global': torch.tensor([chunk_start], dtype=torch.long),
+            }
+
+        # finetune mode
         cond = ["[SPECIES_ECOLI]", "[CIPRO]", "[RESISTANT]"]
         bos_id = self.tokenizer.bos_token_id
         sep_id = self.tokenizer.vocab["[SEP]"]
 
         cond_ids = torch.tensor([self.tokenizer.vocab[c] for c in cond], dtype=torch.long)
 
-        # Pure proteome (continuation)
         unmut_prot = self.tokenizer.encode_fast(row['unmutated_proteome'], add_special_tokens=False)
         mut_prot   = self.tokenizer.encode_fast(row['mutated_proteome'],   add_special_tokens=False)
 
         sep_tensor = torch.tensor([sep_id], dtype=torch.long)
         bos_tensor = torch.tensor([bos_id], dtype=torch.long)
 
-        # INPUT:  ... unmutated continuation after SEP
-        # LABELS: ... mutated   continuation after SEP
         input_full = torch.cat([bos_tensor, cond_ids, unmut_prot, sep_tensor, unmut_prot])
         label_full = torch.cat([bos_tensor, cond_ids, unmut_prot, sep_tensor, mut_prot])
 
@@ -196,9 +226,6 @@ class ProteomeDataset(Dataset):
             pad = torch.full((pad_len,), self.tokenizer.pad_token_id, dtype=torch.long)
             input_chunk = torch.cat([input_chunk, pad])
             labels      = torch.cat([labels, pad])
-
-        phylo_idx = self.genome_to_phylo_idx[genome_idx]
-        phylo_dist = torch.tensor(self.phylo_matrix[phylo_idx], dtype=torch.float)
 
         return {
             'input_ids': input_chunk,

@@ -72,10 +72,10 @@ class PhyloGen(nn.Module):
         self.final_norm = nn.LayerNorm(embed_dim)
         self.lm_head = nn.Linear(embed_dim, vocab_size, bias=False)
 
+        self._init_weights()
+
         # Weight tying
         self.lm_head.weight = self.token_embed.weight
-
-        self._init_weights()
 
     def _init_weights(self):
         nn.init.normal_(self.token_embed.weight, mean=0.0, std=0.02)
